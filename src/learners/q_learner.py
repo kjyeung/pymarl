@@ -3,7 +3,7 @@ from components.episode_buffer import EpisodeBatch
 from modules.mixers.vdn import VDNMixer
 from modules.mixers.qmix import QMixer
 import torch as th
-from torch.optim import RMSprop
+from torch.optim import RMSprop, Adam
 
 
 class QLearner:
@@ -17,6 +17,10 @@ class QLearner:
         self.last_target_update_episode = 0
 
         self.mixer = None
+        self.optimiser = None
+        if args.optimiser is not None:
+            self.optimiser = args.optimiser
+
         if args.mixer is not None:
             if args.mixer == "vdn":
                 self.mixer = VDNMixer()
@@ -27,7 +31,10 @@ class QLearner:
             self.params += list(self.mixer.parameters())
             self.target_mixer = copy.deepcopy(self.mixer)
 
-        self.optimiser = RMSprop(params=self.params, lr=args.lr, alpha=args.optim_alpha, eps=args.optim_eps)
+        if self.optimiser == "Adam":
+            self.optimiser = Adam(params=self.params, lr=args.lr, betas=(0.9, 0.98), eps=1e-9)
+        else:
+            self.optimiser = RMSprop(params=self.params, lr=args.lr, alpha=args.optim_alpha, eps=args.optim_eps)
 
         # a little wasteful to deepcopy (e.g. duplicates action selector), but should work for any MAC
         self.target_mac = copy.deepcopy(mac)

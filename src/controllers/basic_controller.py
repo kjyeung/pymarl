@@ -26,7 +26,10 @@ class BasicMAC:
     def forward(self, ep_batch, t, test_mode=False):
         agent_inputs = self._build_inputs(ep_batch, t)
         avail_actions = ep_batch["avail_actions"][:, t]
-        agent_outs, self.hidden_states = self.agent(agent_inputs, self.hidden_states)
+        if self.args.agent == "transformer":
+            agent_outs = self.agent(agent_inputs)
+        else:
+            agent_outs, self.hidden_states = self.agent(agent_inputs, self.hidden_states)
 
         # Softmax the agent outputs if they're policy logits
         if self.agent_output_type == "pi_logits":
@@ -54,6 +57,9 @@ class BasicMAC:
         return agent_outs.view(ep_batch.batch_size, self.n_agents, -1)
 
     def init_hidden(self, batch_size):
+        if self.args.agent == "transformer":
+            self.agent.init_hidden()
+            return
         self.hidden_states = self.agent.init_hidden().unsqueeze(0).expand(batch_size, self.n_agents, -1)  # bav
 
     def parameters(self):
