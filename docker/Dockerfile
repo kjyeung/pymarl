@@ -21,7 +21,8 @@ RUN curl -sk https://raw.githubusercontent.com/torch/distro/master/install-deps 
 # Install python3 pip3
 RUN apt-get update
 RUN apt-get -y install python3
-RUN apt-get -y install python3-pip
+RUN wget https://bootstrap.pypa.io/pip/3.5/get-pip.py
+RUN python3 get-pip.py
 RUN pip3 install --upgrade pip
 
 # Python packages we use (or used at one point...)
@@ -45,7 +46,7 @@ RUN pip3 install torch
 RUN pip3 install torchvision snakeviz pytest probscale
 
 ## -- SMAC
-RUN pip3 install git+https://github.com/oxwhirl/smac.git
+RUN pip3 install git+https://github.com/kjyeung/smac.git
 ENV SC2PATH /pymarl/3rdparty/StarCraftII
 
 WORKDIR /pymarl
